@@ -1,65 +1,54 @@
-# Job Hunter Agent 🤖
+# Job Hunter Agent (n8n-powered) 🤖
 
-An autonomous AI agent that **automatically discovers, evaluates, and ranks job opportunities** based on your resume — so you only apply to roles that truly match your background.
+An autonomous **AI job hunting agent built with n8n**, designed to automatically discover, evaluate, and rank job opportunities based on your resume.
 
-> Stop scrolling LinkedIn. Let an agent do the hunting.
+> Let automation and LLMs fight LinkedIn’s algorithm for you.
 
 ---
 
 ## ✨ What This Agent Does
 
-Every day at a scheduled time, the agent:
+Every day at a scheduled time, this agent:
 
-1. Loads your **latest resume** from a local folder
-2. Searches for **new job postings from the last 24 hours**
+1. Loads your **latest resume from a local folder**
+2. Collects **new job postings from the last 24 hours**
 3. Parses job descriptions into structured requirements
-4. Matches each job against your resume using **LLMs + rule-based logic**
+4. Matches each role against your resume using **LLMs + rule-based logic**
 5. Scores and ranks jobs with **explainable criteria**
-6. Sends you a **daily digest of the top-matching roles**
+6. Sends a **daily digest of the most relevant jobs**
+
+All orchestration is handled by **n8n workflows**.
 
 ---
 
-## 🧠 Core Features
+## 🧠 Why n8n?
 
-* 📄 **Local Resume Parsing** (PDF → structured JSON, with caching)
-* 🔍 **Multi-source Job Search**
+* Visual, debuggable AI workflows
+* Native scheduling (Cron)
+* Easy API & LLM integration
+* Ideal for autonomous agents
+* Perfect for rapid iteration and demos
 
-  * Google Jobs
-  * LinkedIn job alert emails
-  * Twitter / X hiring posts
-* 📑 **Hybrid JD Parser**
-
-  * Rule-based extraction
-  * LLM semantic understanding
-* 🧠 **CV ↔ JD Matching Engine**
-
-  * Skill overlap
-  * Project similarity
-  * Language & location constraints
-* 📊 **Explainable Scoring System**
-* 📬 **Daily Notifications**
-
-  * Email (default)
-  * Notion / Slack (optional)
+This project focuses on **agent behavior**, not glue code.
 
 ---
 
 ## 🏗️ Architecture Overview
 
 ```text
-Scheduler
+Cron Trigger (n8n)
    ↓
-Resume Loader (Local)
+Resume Loader (Local File)
    ↓
-Job Aggregation
+Job Aggregation (Google / Email / X)
    ↓
-JD Parser
+JD Parsing (LLM)
    ↓
-CV ↔ JD Matching Engine
+CV ↔ JD Matching (LLM + Rules)
    ↓
 Scoring & Ranking
    ↓
-Daily Notification
+Email / Notion / Slack Notification
 ```
 
 ---
@@ -67,47 +56,34 @@ Daily Notification
 ## 📁 Project Structure
 
 ```text
-src/
-├── resume_loader.py     # Load & parse resume
-├── job_search/          # Job source integrations
-├── jd_parser.py         # JD → structured requirements
-├── matcher.py           # CV ↔ JD semantic matching
-├── scorer.py            # Scoring & ranking logic
-├── notifier/            # Email / Notion push
-└── main.py              # Pipeline entry point
+workflows/   # n8n workflow JSON files
+prompts/     # LLM prompt templates
+config/      # Scoring rules & filters
+data/        # Resume & job cache
+docs/        # Setup & architecture notes
 ```
-
----
-
-## ⚙️ Tech Stack
-
-* Python
-* LLM APIs (OpenAI / Claude, pluggable)
-* PDF parsing (`pdfplumber`)
-* Embeddings for semantic similarity
-* Cron / launchd / GitHub Actions
 
 ---
 
 ## 🚀 Roadmap
 
-* [ ] Resume parser
-* [ ] Job aggregation
-* [ ] JD parser
-* [ ] Matching & scoring
+* [ ] Resume ingestion & caching
+* [ ] Job aggregation workflows
+* [ ] JD parsing prompt
+* [ ] CV ↔ JD matching logic
+* [ ] Explainable scoring
 * [ ] Daily email digest
-* [ ] Automatic cover letter generation
-* [ ] Resume bullet optimization
+* [ ] Auto cover letter generation
 
 ---
 
 ## 📌 Disclaimer
 
-This project is for **personal and educational use**.
+This project is for **personal and educational use only**.
 No aggressive scraping is performed.
 
 ---
 
 ## 🧑‍💻 Author
 
-Built by a job seeker who got tired of fighting LinkedIn’s algorithm.
+Built by someone who decided AI agents should apply to jobs instead of humans.
