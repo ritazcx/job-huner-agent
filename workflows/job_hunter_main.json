@@ -1,0 +1,161 @@
+{
+  "name": "Job Hunter Agent - V1",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyDay",
+              "hour": 7,
+              "minute": 0
+            }
+          ]
+        }
+      },
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "filePath": "/data/resume/CV_latest.pdf"
+      },
+      "name": "Read Resume PDF",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "data"
+      },
+      "name": "Extract Resume Text",
+      "type": "n8n-nodes-base.pdfExtract",
+      "typeVersion": 1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an AI resume parser. Extract skills, experience keywords, languages, and seniority. Return JSON only."
+          },
+          {
+            "role": "user",
+            "content": "{{$json.text}}"
+          }
+        ]
+      },
+      "name": "Resume Parser (LLM)",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "job_title",
+              "value": "Machine Learning Engineer"
+            },
+            {
+              "name": "job_description",
+              "value": "We are hiring an ML Engineer with Python, machine learning, NLP experience. English required. 2+ years experience."
+            }
+          ]
+        }
+      },
+      "name": "Mock Job Description",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Compare the resume JSON with the job description. Return JSON with skill_match_score (0-100), experience_match_score (0-100), language_match (true/false), explanation (array of strings)."
+          },
+          {
+            "role": "user",
+            "content": "Resume JSON:\n{{$node[\"Resume Parser (LLM)\"].json}}\n\nJob Description:\n{{$json.job_description}}"
+          }
+        ]
+      },
+      "name": "CV ↔ JD Matcher",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1200, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const skill = item.skill_match_score || 0;\nconst exp = item.experience_match_score || 0;\nconst lang = item.language_match ? 20 : 0;\nitem.final_score = Math.round(skill * 0.4 + exp * 0.4 + lang);\nreturn item;"
+      },
+      "name": "Scoring Function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "you@example.com",
+        "toEmail": "you@example.com",
+        "subject": "🎯 Job Hunter Agent – Test Result",
+        "text": "Job: {{$node[\"Mock Job Description\"].json.job_title}}\nFinal Score: {{$json.final_score}}\n\nExplanation:\n{{$json.explanation.join(\"\\n\")}}"
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [1600, 300],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_ME",
+          "name": "SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron Trigger": {
+      "main": [[{ "node": "Read Resume PDF", "type": "main", "index": 0 }]]
+    },
+    "Read Resume PDF": {
+      "main": [[{ "node": "Extract Resume Text", "type": "main", "index": 0 }]]
+    },
+    "Extract Resume Text": {
+      "main": [[{ "node": "Resume Parser (LLM)", "type": "main", "index": 0 }]]
+    },
+    "Resume Parser (LLM)": {
+      "main": [[{ "node": "Mock Job Description", "type": "main", "index": 0 }]]
+    },
+    "Mock Job Description": {
+      "main": [[{ "node": "CV ↔ JD Matcher", "type": "main", "index": 0 }]]
+    },
+    "CV ↔ JD Matcher": {
+      "main": [[{ "node": "Scoring Function", "type": "main", "index": 0 }]]
+    },
+    "Scoring Function": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false
+}
